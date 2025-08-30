@@ -6,7 +6,7 @@ echo 'DERP starting...'
 : "${DERP_DOMAIN:?must set DERP_DOMAIN}"
 : "${TAILSCALE_HOSTNAME:=derp-auth}"
 
-TS_STATE_FILE="/var/lib/tailscale/tailscaled.state"
+TAILSCALE_STATE_FILE="/var/lib/tailscale/tailscaled.state"
 
 tailscaled > /dev/null 2>&1 &
 
@@ -17,22 +17,22 @@ done
 
 [ -S /var/run/tailscale/tailscaled.sock ] || { echo "tailscaled.sock missing"; exit 1; }
 
-TS_AUTH=""
-if [ ! -s "$TS_STATE_FILE" ]; then
+TAILSCALE_AUTH_FLAG=""
+if [ ! -s "$TAILSCALE_STATE_FILE" ]; then
   : "${TAILSCALE_AUTH_KEY:?must set TAILSCALE_AUTH_KEY for first boot}"
-  TS_AUTH="--authkey=${TAILSCALE_AUTH_KEY}"
+  TAILSCALE_AUTH_FLAG="--authkey=${TAILSCALE_AUTH_KEY}"
 fi
 
-TS_LOGIN_FLAG=""
-if [ -n "${TS_LOGIN_SERVER+x}" ] && [ -n "${TS_LOGIN_SERVER}" ]; then
-  TS_LOGIN_FLAG="--login-server=${TS_LOGIN_SERVER}"
+TAILSCALE_LOGIN_FLAG=""
+if [ -n "${TAILSCALE_LOGIN_SERVER+x}" ] && [ -n "${TAILSCALE_LOGIN_SERVER}" ]; then
+  TAILSCALE_LOGIN_FLAG="--login-server=${TAILSCALE_LOGIN_SERVER}"
 fi
 
 MAX_RETRIES=10
 COUNT=0
 until tailscale up \
-  ${TS_LOGIN_FLAG} \
-  ${TS_AUTH} \
+  ${TAILSCALE_LOGIN_FLAG} \
+  ${TAILSCALE_AUTH_FLAG} \
   --hostname="${TAILSCALE_HOSTNAME}" \
   --accept-routes=false \
   --shields-up=true \
